@@ -1,0 +1,2 @@
+class Momopay < ApplicationRecord
+end
