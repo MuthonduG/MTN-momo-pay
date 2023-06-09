@@ -5,6 +5,10 @@ class MomopaysController < ApplicationController
     require 'momoapi-ruby/config'
     require 'momoapi-ruby/client'
     require 'momoapi-ruby/validate'
+
+    config.collection_primary_key = 'Your Collection Subscription Key'
+    config.collection_user_id = 'Your Collection User ID'
+    config.collection_api_secret = 'Your Collection API Key'
   
     def request_pay
       phoneNumber = params[:phone_number]
