@@ -1,6 +1,5 @@
 class MomopaysController < ApplicationController
   require 'securerandom'
-  require 'rest-client'
   require 'faraday'
   require 'json'
 
@@ -96,7 +95,7 @@ class MomopaysController < ApplicationController
   end
   
 
-  def request_pay
+  def request_pay 
     phoneNumber = params[:phone_number]
     amount = params[:amount]
     currency = 'EUR'
@@ -135,6 +134,10 @@ class MomopaysController < ApplicationController
     end
 
     render json: response
+  end
+
+  def payment_status
+
   end
 
 end
