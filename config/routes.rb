@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   post 'create_key', to: 'momopays#create_apikey'
   get 'get_user', to: 'momopays#get_user'
   post 'access_token', to: 'momopays#generate_access_token'
+  post 'pay_request', to: 'momopays#request_pay'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Defines the root path route ("/")

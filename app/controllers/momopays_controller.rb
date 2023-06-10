@@ -70,10 +70,13 @@ class MomopaysController < ApplicationController
   def generate_access_token
     url = 'https://sandbox.momodeveloper.mtn.com/collection/token/'
 
+    client_key = '158ad00c-f7d1-4f3c-ac37-a519a01995d3'
+    client_secret = '90270bc1dcba4efc9efedd9291b729e0'
+  
     headers = {
       'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
-      'Authorization': 'Basic MTU4YWQwMGMtZjdkMS00ZjNjLWFjMzctYTUxOWEwMTk5NWQzOjkwMjcwYmMxZGNiYTRlZmM5ZWZlZGQ5MjkxYjcyOWUw'
-    }      
+      'Authorization': "Basic #{Base64.strict_encode64("#{client_key}:#{client_secret}")}"
+    }   
     
     conn = Faraday.new(url: url)
 
@@ -95,20 +98,20 @@ class MomopaysController < ApplicationController
   def request_pay
     phoneNumber = params[:phone_number]
     amount = params[:amount]
-    currency = 'RWF'
+    currency = 'EUR'
     payee_note = ''
     payer_message = ''
     external_id = ''
-
-    Monoapi::Validate.new.validate(phoneNumber, amount, currency)
+    access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSMjU2In0.eyJjbGllbnRJZCI6IjE1OGFkMDBjLWY3ZDEtNGYzYy1hYzM3LWE1MTlhMDE5OTVkMyIsImV4cGlyZXMiOiIyMDIzLTA2LTEwVDE4OjE1OjQ5LjIwNCIsInNlc3Npb25JZCI6ImJlNWIzOTBhLTU2MTYtNGE1My04Y2FkLTI3YWNhZWNkMjIxMSJ9.i0AF5rBPLfXhlaPGTSbSol303gN_Us3v6gStPObJ-rgmCijNTpnVc-7v4K6lYYCRKNxjzRxqlBaPQN-gfN3ZgooEKCXnN4YGp-uiA6bsiBX48t1WSW7ObmWNeHKP_AIeebapuKbwKvg7fiFNDHtJmklsn7NouuQX1PQbpR2eT29YKJGub9HV1KgatS0lfmM5zTI8XtSWaR0beUzC1FpKSutygqJ5mtleVj_Da1e6EeT4ynUFKQGVs4GTbRV7BBx9bYck2SO2bt0vdmDT7c8KJpe0rG6fLPDzSdQ7KDUdoP1eKDCyKADdbZP01JkmF8jm9vFZkSMFu-r1NkPyL-Z5ow"
+    
     uuid = SecureRandom.uuid
 
     headers = {
-      'X-Target-Environment': Monoapi.config.environment || 'sandbox',
+      'X-Target-Environment': 'sandbox',
       'Content-Type': 'application/json',
       'X-Reference-Id': uuid,
-      'Ocp-Apim-Subscription-Key': Monoapi.config.collection_primary_key,
-      'Authorization': "Bearer #{get_access_token}"
+      'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
+      'Authorization': "Bearer #{access_token}"
     }
 
     body = {
@@ -120,28 +123,18 @@ class MomopaysController < ApplicationController
       'payerMessage': payer_message,
       'externalId': external_id,
       'currency': currency,
-      'amount': amount.to_s
+      'amount': amount
     }
 
     path = 'https://sandbox.momodeveloper.mtn.com/collection/v1_0/requesttopay'
-
-    response = RestClient::Request.execute(
-      method: :post,
-      url: path,
-      payload: body.to_json,
-      headers: headers
-    )
-
-    case response.code
-      when 500
-        result = [:error, JSON.parse(response.to_str)]
-      when 400
-        result = [:error, JSON.parse(response.to_str)]
-      else
-        result = [:success, JSON.parse(response.to_str)]
-      end
-  
-      { transaction_reference: uuid }.to_json
+    conn = Faraday.new(url: path)
+    
+    response = conn.post do |req|
+      req.headers = headers
+      req.body = body.to_json
+    end
+    
+    render json: response
   end
   
     # private
