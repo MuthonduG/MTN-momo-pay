@@ -7,11 +7,6 @@ class MomopaysController < ApplicationController
   require 'momoapi-ruby/validate'
   require 'json'
 
-  # Make sure to set these values correctly
-  config.collection_primary_key = 'Your Collection Subscription Key'
-  config.collection_user_id = 'Your Collection User ID'
-  config.collection_api_secret = 'Your Collection API Key'
-
   def create_user
     url = 'https://sandbox.momodeveloper.mtn.com/v1_0/apiuser'
     uuid = SecureRandom.uuid
@@ -69,31 +64,40 @@ class MomopaysController < ApplicationController
     
   def generate_access_token
     url = 'https://sandbox.momodeveloper.mtn.com/collection/token/'
-
+  
     client_key = '158ad00c-f7d1-4f3c-ac37-a519a01995d3'
     client_secret = '90270bc1dcba4efc9efedd9291b729e0'
   
     headers = {
       'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
       'Authorization': "Basic #{Base64.strict_encode64("#{client_key}:#{client_secret}")}"
-    }   
-    
+    }
+  
     conn = Faraday.new(url: url)
-
+  
     response = conn.post do |req|
       req.headers = headers
     end
-
+  
     response_body = JSON.parse(response.body)
+  
     if response.success?
       access_token = response_body['access_token']
-      render json: { access_token: access_token }
+      { access_token: access_token }
     else
       error_message = response_body['error']
-      render json: { error: error_message }, status: :bad_request
+      { error: error_message }
     end
-
   end
+  
+  def get_token
+    response = generate_access_token()
+    if response.key?(:error)
+      response = generate_access_token()
+    end
+    render json: response[:access_token]
+  end
+  
 
   def request_pay
     phoneNumber = params[:phone_number]
@@ -127,21 +131,15 @@ class MomopaysController < ApplicationController
     }
 
     path = 'https://sandbox.momodeveloper.mtn.com/collection/v1_0/requesttopay'
+
     conn = Faraday.new(url: path)
-    
     response = conn.post do |req|
       req.headers = headers
       req.body = body.to_json
     end
-    
+
     render json: response
   end
-  
-    # private
-
-  
-    def get_access_token response       
-    end
 
 end
   
