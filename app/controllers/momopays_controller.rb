@@ -2,9 +2,6 @@ class MomopaysController < ApplicationController
   require 'securerandom'
   require 'rest-client'
   require 'faraday'
-  require 'momoapi-ruby/config'
-  require 'momoapi-ruby/client'
-  require 'momoapi-ruby/validate'
   require 'json'
 
   def create_user
@@ -42,7 +39,7 @@ class MomopaysController < ApplicationController
       req.headers = headers
     end
 
-    render json: response
+    render json: response.body
   end
   
   def create_apikey
@@ -95,7 +92,7 @@ class MomopaysController < ApplicationController
     if response.key?(:error)
       response = generate_access_token()
     end
-    render json: response[:access_token]
+   response[:access_token]
   end
   
 
@@ -103,11 +100,10 @@ class MomopaysController < ApplicationController
     phoneNumber = params[:phone_number]
     amount = params[:amount]
     currency = 'EUR'
-    payee_note = ''
-    payer_message = ''
-    external_id = ''
-    access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSMjU2In0.eyJjbGllbnRJZCI6IjE1OGFkMDBjLWY3ZDEtNGYzYy1hYzM3LWE1MTlhMDE5OTVkMyIsImV4cGlyZXMiOiIyMDIzLTA2LTEwVDE4OjE1OjQ5LjIwNCIsInNlc3Npb25JZCI6ImJlNWIzOTBhLTU2MTYtNGE1My04Y2FkLTI3YWNhZWNkMjIxMSJ9.i0AF5rBPLfXhlaPGTSbSol303gN_Us3v6gStPObJ-rgmCijNTpnVc-7v4K6lYYCRKNxjzRxqlBaPQN-gfN3ZgooEKCXnN4YGp-uiA6bsiBX48t1WSW7ObmWNeHKP_AIeebapuKbwKvg7fiFNDHtJmklsn7NouuQX1PQbpR2eT29YKJGub9HV1KgatS0lfmM5zTI8XtSWaR0beUzC1FpKSutygqJ5mtleVj_Da1e6EeT4ynUFKQGVs4GTbRV7BBx9bYck2SO2bt0vdmDT7c8KJpe0rG6fLPDzSdQ7KDUdoP1eKDCyKADdbZP01JkmF8jm9vFZkSMFu-r1NkPyL-Z5ow"
-    
+    payee_note = 'Paid'
+    payer_message = 'Pay Max'
+    external_id = '678990'
+        
     uuid = SecureRandom.uuid
 
     headers = {
@@ -115,7 +111,7 @@ class MomopaysController < ApplicationController
       'Content-Type': 'application/json',
       'X-Reference-Id': uuid,
       'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
-      'Authorization': "Bearer #{access_token}"
+      'Authorization': "Bearer #{get_token}"
     }
 
     body = {
