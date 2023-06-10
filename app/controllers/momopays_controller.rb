@@ -33,12 +33,11 @@ class MomopaysController < ApplicationController
     end
 
     render json: uuid, status: :ok
-    create_apikey(uuid)
   end
 
 
   def get_user
-    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/a7a006d3-f224-4a76-9f7a-5cec7c61e876"
+    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/158ad00c-f7d1-4f3c-ac37-a519a01995d3"
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c'
     }
@@ -52,7 +51,7 @@ class MomopaysController < ApplicationController
   end
   
   def create_apikey
-    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/a7a006d3-f224-4a76-9f7a-5cec7c61e876/apikey"
+    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/158ad00c-f7d1-4f3c-ac37-a519a01995d3/apikey"
   
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c',
@@ -63,7 +62,34 @@ class MomopaysController < ApplicationController
       req.headers = headers
     end
   
-    render json: response
+    apikey = response.body
+    render json: apikey
+  end
+
+    
+  def generate_access_token
+    url = 'https://sandbox.momodeveloper.mtn.com/collection/token/'
+
+    headers = {
+      'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
+      'Authorization': 'Basic MTU4YWQwMGMtZjdkMS00ZjNjLWFjMzctYTUxOWEwMTk5NWQzOjkwMjcwYmMxZGNiYTRlZmM5ZWZlZGQ5MjkxYjcyOWUw'
+    }      
+    
+    conn = Faraday.new(url: url)
+
+    response = conn.post do |req|
+      req.headers = headers
+    end
+
+    response_body = JSON.parse(response.body)
+    if response.success?
+      access_token = response_body['access_token']
+      render json: { access_token: access_token }
+    else
+      error_message = response_body['error']
+      render json: { error: error_message }, status: :bad_request
+    end
+
   end
 
   def request_pay
@@ -119,26 +145,7 @@ class MomopaysController < ApplicationController
   end
   
     # private
-  
-    def generate_access_token(response, uuid)
-      url = 'https://sandbox.momodeveloper.mtn.com/collection/token/'
 
-      headers = {
-        'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
-        http_basic_authenticate_with: [uuid, response] 
-      }
-      
-      response = RestClient::Request.execute(
-        method: :post,
-        url: url,
-        headers: headers
-      )
-  
-      render json: response
-
-      get_access_token(response)
-
-    end
   
     def get_access_token response       
     end
