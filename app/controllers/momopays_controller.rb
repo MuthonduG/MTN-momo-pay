@@ -32,13 +32,13 @@ class MomopaysController < ApplicationController
       req.body = payload.to_json
     end
 
-    render json: response, status: :ok
+    render json: uuid, status: :ok
     create_apikey(uuid)
   end
 
 
-  def get_user(uuid)
-    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/#{uuid}"
+  def get_user
+    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/a7a006d3-f224-4a76-9f7a-5cec7c61e876"
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c'
     }
@@ -47,10 +47,12 @@ class MomopaysController < ApplicationController
     response = conn.get do |req|
       req.headers = headers
     end
+
+    render json: response
   end
   
-  def create_apikey(uuid)
-    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/#{uuid}/apikey"
+  def create_apikey
+    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/a7a006d3-f224-4a76-9f7a-5cec7c61e876/apikey"
   
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c',
@@ -61,6 +63,7 @@ class MomopaysController < ApplicationController
       req.headers = headers
     end
   
+    render json: response
   end
 
   def request_pay
