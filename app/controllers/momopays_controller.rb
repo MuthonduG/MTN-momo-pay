@@ -5,11 +5,11 @@ class MomopaysController < ApplicationController
 
   def create_user
     url = 'https://sandbox.momodeveloper.mtn.com/v1_0/apiuser'
-    uuid = SecureRandom.uuid
+    @@uuid = SecureRandom.uuid
 
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c',
-      "X-Reference-Id": uuid,
+      "X-Reference-Id": @@uuid,
       "Content-Type": 'application/json'
     }
 
@@ -23,12 +23,13 @@ class MomopaysController < ApplicationController
       req.body = payload.to_json
     end
 
-    render json: uuid, status: :ok
+    render json: @@uuid, status: :ok
+    # create_apikey(@@uuid)
   end
 
 
   def get_user
-    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/158ad00c-f7d1-4f3c-ac37-a519a01995d3"
+    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/70560e7f-5225-4901-803a-8d52a1273e93"
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c'
     }
@@ -42,31 +43,33 @@ class MomopaysController < ApplicationController
   end
   
   def create_apikey
-    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/158ad00c-f7d1-4f3c-ac37-a519a01995d3/apikey"
-  
+    # Retrieve the UUID from the request parameters
+
+    url = "https://sandbox.momodeveloper.mtn.com/v1_0/apiuser/70560e7f-5225-4901-803a-8d52a1273e93/apikey"
     headers = {
       "Ocp-Apim-Subscription-Key": '0041b35c62984ac293d5b39c582c266c',
     }
-  
+
     conn = Faraday.new(url: url)
     response = conn.post do |req|
       req.headers = headers
     end
-  
+
     apikey = response.body
-    render json: apikey
+    render json: apikey, status: :ok
   end
+
 
     
   def generate_access_token
     url = 'https://sandbox.momodeveloper.mtn.com/collection/token/'
   
-    client_key = '158ad00c-f7d1-4f3c-ac37-a519a01995d3'
-    client_secret = '90270bc1dcba4efc9efedd9291b729e0'
+    password = "ce62314d122341008e5a8551fe68af71"
+    username = "70560e7f-5225-4901-803a-8d52a1273e93"
   
     headers = {
       'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
-      'Authorization': "Basic #{Base64.strict_encode64("#{client_key}:#{client_secret}")}"
+      'Authorization': "Basic #{Base64.strict_encode64("#{username}:#{password}")}"
     }
   
     conn = Faraday.new(url: url)
@@ -91,7 +94,7 @@ class MomopaysController < ApplicationController
     if response.key?(:error)
       response = generate_access_token()
     end
-   response[:access_token]
+    response[:access_token]
   end
   
 
@@ -102,15 +105,17 @@ class MomopaysController < ApplicationController
     payee_note = 'Paid'
     payer_message = 'Pay Max'
     external_id = '678990'
+    token = get_token()
         
     uuid = SecureRandom.uuid
+    # token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSMjU2In0.eyJjbGllbnRJZCI6IjM2NTkwZmJmLTcxMjUtNGY1Yi1hOGFiLWFjZWQyYzllZDg3OSIsImV4cGlyZXMiOiIyMDIzLTA2LTEyVDAwOjM0OjM5LjM2NSIsInNlc3Npb25JZCI6IjQ2OTYwZDYzLTZhMmQtNGY3OS05OTYxLTM3NWQzYjM5YjM2YiJ9.Xj22lMkGjk2ePoga-BNNwP0pjOjx-ZqNnjdXqpdX3164RHiTUQvGrN8blAruXzeI45yy_jTeYneBYQKwkOL2C16Tn3s3aKbwLw7DRhuuJ8K2jeBvPkmwXcgFdlILz17PII93SqjUz5ydfh75vDE3I4KX2EVc8oRApV6iz_ZCxFfnOtM5SDQqH4XLPUTpdeyiVRu8mr4-ydAMDobxNGI94LACjXfxCdCBgqmiXuiJKu6NllOFWBC-Loz7PHbX6lPqdlh-YKj9JLGekzRyI_D_s80XujxP566Zbx-_auNSq4JrtENAFDMK_WYtkLlrFZbPsz_pBO9SJwwsitDrJ9oEdg'
 
     headers = {
       'X-Target-Environment': 'sandbox',
       'Content-Type': 'application/json',
       'X-Reference-Id': uuid,
       'Ocp-Apim-Subscription-Key': '0041b35c62984ac293d5b39c582c266c',
-      'Authorization': "Bearer #{get_token}"
+      'Authorization': "Bearer #{token}"
     }
 
     body = {
